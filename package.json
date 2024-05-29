@@ -1,0 +1,20 @@
+{
+  "name": "deep-zoom-image",
+  "version": "1.0.0",
+  "description": "",
+  "workspaces": [
+    "client",
+    "server"
+  ],
+  "dependencies": {},
+  "devDependencies": {
+    "concurrently": "^8.2.2"
+  },
+  "scripts": {
+    "start": "concurrently \"npm run start:client\" \"npm run start:server\"",
+    "start:client": "npm --workspace client run dev",
+    "start:server": "npm --workspace server run dev"
+  },
+  "author": "",
+  "license": "ISC"
+}
