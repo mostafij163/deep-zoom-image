@@ -3,9 +3,13 @@ import { TransformWrapper, TransformComponent } from "react-zoom-pan-pinch";
 
 const maxResolution = 2500;
 
-export default function BasicViewer() {
-  const maxScale = Math.round(maxResolution / window.innerWidth);
+const maxScale = Math.floor(
+  maxResolution / (window.innerWidth * window.devicePixelRatio)
+);
 
+console.log(maxScale);
+
+export default function BasicViewer() {
   const imgRef = useRef();
   const scaleRef = useRef({
     scale: 1,
@@ -15,8 +19,12 @@ export default function BasicViewer() {
 
   function onTransformEnd() {
     const deviceWidth = window.innerWidth;
+    const dpr = window.devicePixelRatio || 1;
+
     const scaledWidth = deviceWidth * scaleRef.current.scale;
-    const scaledVW = (100 / deviceWidth) * scaledWidth;
+    const requiredImgWidth = scaledWidth * dpr;
+
+    const viewportWidth = (100 / deviceWidth) * scaledWidth;
 
     const urlFragments = imgRef.current.currentSrc.split("/");
     const imgName = urlFragments[urlFragments.length - 1];
@@ -27,23 +35,29 @@ export default function BasicViewer() {
       ? imgRef.current.naturalWidth
       : Number(sizeFragments[0]);
 
-    console.log("curr src width", currentSrcWidth);
-    console.log("scaled vw", scaledVW);
     console.log(
-      "pixel ratio",
-      currentSrcWidth / scaledWidth,
-      window.devicePixelRatio
+      "curr src width: ",
+      currentSrcWidth,
+      "\n required width: ",
+      requiredImgWidth,
+      "\n viewport: ",
+      viewportWidth,
+      "\n scale: ",
+      scaleRef.current.scale,
+      "\n device width: ",
+      deviceWidth,
+      "\n dpr",
+      dpr
     );
-
-    if (currentSrcWidth / scaledWidth < window.devicePixelRatio) {
-      imgRef.current.sizes = scaledVW + "vw";
+    if (currentSrcWidth < requiredImgWidth) {
+      imgRef.current.sizes = viewportWidth + "vw";
     }
   }
 
   return (
     <TransformWrapper
       initialScale={1}
-      maxScale={maxScale}
+      maxScale={maxScale < 1 ? 1 : maxScale}
       onTransformed={(_, state) => {
         scaleRef.current = state;
       }}
